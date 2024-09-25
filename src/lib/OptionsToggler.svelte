@@ -1,13 +1,26 @@
 <script lang="ts">
+  let { selected = $bindable() } = $props();
 </script>
 
 <form action="">
   <div class="section">
-    <input type="radio" name="optionsToggler" id="voice" checked />
+    <input
+      type="radio"
+      bind:group={selected}
+      id="voice"
+      value="voice"
+      checked={selected === "voice"}
+    />
     <label for="voice">Voice</label>
   </div>
-  <div class="section disabled">
-    <input type="radio" name="optionsToggler" id="visual" disabled />
+  <div class="section disabledZ">
+    <input
+      type="radio"
+      bind:group={selected}
+      id="visual"
+      value="visual"
+      checked={selected === "visual"}
+    />
     <label for="visual">Visual</label>
   </div>
 </form>
