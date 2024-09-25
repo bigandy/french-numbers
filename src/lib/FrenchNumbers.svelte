@@ -1,20 +1,38 @@
 <script lang="ts">
+  import { onMount } from "svelte";
   import OptionsToggler from "./OptionsToggler.svelte";
   import { playSpeach, getAvailableFrenchVoices } from "./voices";
 
   let number = $state(getRandomNumber());
-  let voices = $state(getAvailableFrenchVoices());
-  let voice = $state(voices.at(-1));
+  let voices = $state(null);
+  let voice = $state(null);
   let selectVoice = $state(false);
+  let success = $state(false);
+  let guess = $state("");
 
   let guessValue = $state("");
   let selected = $state("voice");
 
+  onMount(async () => {
+    voices = await getAvailableFrenchVoices();
+    voice = voices.at(-1);
+  });
+
+  $effect(() => {
+    if (voice) {
+      playNumber();
+    }
+  });
+
   function submitGuess(e) {
     e.preventDefault();
 
-    if (guessValue === number) {
-      clearForm();
+    guess = guessValue;
+    success = false;
+
+    if (guess === number) {
+      // clearForm();
+      success = true;
     } else {
       console.log("try again", guessValue);
       clearForm();
@@ -23,6 +41,7 @@
 
   function clearForm() {
     guessValue = "";
+    guess = "";
   }
 
   function getRandomNumber(min = 1, max = 100) {
@@ -36,9 +55,7 @@
       guessValue = "";
     }
 
-    // if (showNumber === false) {
-    playNumber();
-    // }
+    // TODO: Focus the input box.
   }
 
   function playNumber() {
@@ -70,11 +87,16 @@
   <button onclick={submitGuess}>Submit Guess</button>
 </form>
 
-{#if guessValue === number}
+{#if guess === number}
   <div class="popover">
-    <h2>Correct Answer</h2>
-    <p>Successfully answered with <span class="number">{number}</span></p>
-    <button onclick={getAnotherNumber}>Try another?</button>
+    <form onsubmit={getAnotherNumber}>
+      <h2>Correct Answer</h2>
+      <p>Guess: <small>{guess}</small></p>
+      <p>Number: <small>{number}</small></p>
+
+      <p>Successfully answered with <span class="number">{number}</span></p>
+      <button onclick={getAnotherNumber}>Try another?</button>
+    </form>
   </div>
 {/if}
 

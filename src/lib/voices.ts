@@ -1,13 +1,23 @@
-export function getAvailableFrenchVoices() {
-  if (typeof speechSynthesis === "undefined") {
-    return;
-  }
+export async function getAvailableFrenchVoices() {
+  // if (typeof speechSynthesis === "undefined") {
+  //   return;
+  // }
 
-  const voices = speechSynthesis
-    .getVoices()
-    .filter((lang) => lang.lang === "fr-FR");
+  let voicesPromise = new Promise((resolve) => {
+    speechSynthesis.addEventListener("voiceschanged", (ev) => {
+      resolve(speechSynthesis.getVoices());
+    });
+  });
 
-  return voices;
+  const voices = await voicesPromise;
+
+  console.log({ voices });
+  // return [];
+  // @ts-expect-error
+  return voices.filter((lang) => lang.lang === "fr-FR");
+  // );
+
+  // return voices;
 }
 
 export function playSpeach(text = "1 2 3", voice) {
