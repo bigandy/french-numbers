@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { Confetti } from "svelte-confetti";
+
   import OptionsToggler from "./OptionsToggler.svelte";
   import { playSpeach, getAvailableFrenchVoices } from "./voices";
 
@@ -6,6 +8,7 @@
   let voices = $state(getAvailableFrenchVoices());
   let voice = $state(voices.at(-1));
   let showNumber = $state(false);
+  let showConfetti = $state(false);
 
   let guessValue = $state("");
 
@@ -13,7 +16,7 @@
     e.preventDefault();
 
     if (guessValue === number) {
-      alert("well done");
+      showConfetti = true;
       clearForm();
       getAnotherNumber();
     } else {
@@ -27,15 +30,15 @@
   }
 
   function getRandomNumber(min = 1, max = 100) {
-    return String(Math.floor(Math.random() * (max - min + 1)) + min);
+    return (Math.floor(Math.random() * (max - min + 1)) + min).toString();
   }
 
   function getAnotherNumber() {
     number = getRandomNumber();
 
-    if (showNumber === false) {
-      playNumber();
-    }
+    // if (showNumber === false) {
+    playNumber();
+    // }
   }
 
   function playNumber() {
@@ -72,6 +75,10 @@
   <input type="text" id="guess" bind:value={guessValue} />
   <button onclick={submitGuess}>Submit Guess</button>
 </form>
+
+{#if showConfetti}
+  <Confetti />
+{/if}
 
 <style>
   .number {
