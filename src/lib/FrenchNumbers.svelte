@@ -1,118 +1,118 @@
 <script lang="ts">
+  // Svelte Stuff
   import { onMount } from "svelte";
+
+  // Component Imports
   import OptionsToggler from "./OptionsToggler.svelte";
+  import CorrectPopover from "./CorrectPopover.svelte";
+  import GuessForm from "./GuessForm.svelte";
+  // import SelectVoice from "./SelectVoice.svelte";
+
+  // Other Imports
   import { playSpeach, getAvailableFrenchVoices } from "./voices";
+  import type { FormState } from "./Types";
 
-  let number = $state(getRandomNumber());
-  let voices = $state(null);
-  let voice = $state(null);
-  let selectVoice = $state(false);
-  let success = $state(false);
+  // State
+
+  let answer = $state(getNewNumber());
+  let voices: SpeechSynthesisVoice[] = $state([]);
+  let voice: SpeechSynthesisVoice | undefined = $state(undefined);
   let guess = $state("");
-
-  let guessValue = $state("");
-  let selected = $state("voice");
+  let selected: "voice" | "visual" = $state("voice");
+  let formState: FormState = $state("");
+  let showSuccess = $state(false);
 
   onMount(async () => {
     voices = await getAvailableFrenchVoices();
     voice = voices.at(-1);
   });
 
+  // $effect(() => {
+  //   if (answer) {
+  //     playNumber();
+  //   }
+  // });
+
+  function submitGuess(guessValue: string) {
+    guess = guessValue;
+
+    if (guess === answer) {
+      formState = "correct";
+      clearForm();
+      console.log("celebrate?");
+    } else {
+      formState = "incorrect";
+      console.log("try again", guessValue);
+      // clearForm();
+    }
+  }
+
   $effect(() => {
-    if (voice) {
-      playNumber();
+    if (formState === "correct") {
+      if (!showSuccess) {
+        getAnotherNumber(true);
+        // formState = "";
+      }
     }
   });
 
-  function submitGuess(e) {
-    e.preventDefault();
-
-    guess = guessValue;
-    success = false;
-
-    if (guess === number) {
-      // clearForm();
-      success = true;
-    } else {
-      console.log("try again", guessValue);
-      clearForm();
-    }
-  }
-
   function clearForm() {
-    guessValue = "";
     guess = "";
   }
 
-  function getRandomNumber(min = 1, max = 100) {
+  function getNewNumber(min = 1, max = 100) {
     return (Math.floor(Math.random() * (max - min + 1)) + min).toString();
   }
 
-  function getAnotherNumber() {
-    number = getRandomNumber();
+  function getAnotherNumber(readOutNumber = false) {
+    answer = getNewNumber();
 
-    if (guessValue !== "") {
-      guessValue = "";
+    if (readOutNumber) {
+      playNumber();
     }
-
-    // TODO: Focus the input box.
   }
 
   function playNumber() {
-    console.log("should play the number audibly", number);
-    playSpeach(number, voice);
+    console.log("should play the number audibly", answer);
+
+    if (voice) {
+      playSpeach(answer, voice);
+    }
   }
 
-  function handleSelectChange(event) {
-    const { target } = event;
-    console.log({ event, target, value: target.value });
-
-    voice = voices.find((voice) => voice.name === target.value);
+  function onClearForm() {
+    formState = "";
   }
+
+  // function handleVoiceChange(event: any) {
+  //   const { target } = event;
+
+  //   voice = voices.find((voice) => voice.name === target.value);
+  // }
 </script>
 
 <OptionsToggler bind:selected />
 
 {#if selected === "visual"}
   <div class="number">
-    {number}
+    {answer}
   </div>
 {/if}
 
 <button onclick={playNumber} class="play">Play</button>
 <button onclick={getAnotherNumber} class="full"> Another Number Please </button>
 
-<form onsubmit={submitGuess}>
-  <input type="text" id="guess" bind:value={guessValue} class="text-input" />
-  <button onclick={submitGuess}>Submit Guess</button>
-</form>
+<GuessForm {submitGuess} {answer} status={formState} {onClearForm} />
 
-{#if guess === number}
-  <div class="popover">
-    <form onsubmit={getAnotherNumber}>
-      <h2>Correct Answer</h2>
-      <p>Guess: <small>{guess}</small></p>
-      <p>Number: <small>{number}</small></p>
-
-      <p>Successfully answered with <span class="number">{number}</span></p>
-      <button onclick={getAnotherNumber}>Try another?</button>
-    </form>
-  </div>
+{#if showSuccess}
+  <CorrectPopover
+    {answer}
+    handleFormSubmit={getAnotherNumber}
+    show={guess === answer}
+  />
 {/if}
 
-<label for="selectVoice">Select Voice?</label><input
-  type="checkbox"
-  id="selectVoice"
-  bind:checked={selectVoice}
-/>
-
-{#if selectVoice}
-  <select name="voices" id="voices" onchange={handleSelectChange}>
-    {#each voices as voice (voice)}
-      <option value={voice.name}>{voice.name}</option>
-    {/each}
-  </select>
-{/if}
+<!-- <SelectVoice {voices} handleSelectChange={handleVoiceChange} /> -->
 
 <style>
   .number {
@@ -124,12 +124,6 @@
     display: block;
   }
 
-  select {
-    margin-block-start: 1rem;
-    padding: 1rem;
-    display: block;
-  }
-
   .play {
     margin-block: 1rem;
     display: inline-block;
@@ -137,38 +131,5 @@
 
   .full {
     width: 100%;
-  }
-
-  form {
-    border: 1px solid;
-
-    padding: 1em;
-    display: grid;
-    gap: 1rem;
-    margin-block: 1rem;
-  }
-
-  .text-input {
-    padding: 1em;
-  }
-
-  .popover {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: black;
-    padding: 4rem;
-    text-align: center;
-    color: white;
-
-    .number {
-      display: block;
-    }
-
-    button {
-      display: inline-block;
-    }
   }
 </style>

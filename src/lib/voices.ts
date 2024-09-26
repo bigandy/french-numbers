@@ -1,26 +1,18 @@
 export async function getAvailableFrenchVoices() {
-  // if (typeof speechSynthesis === "undefined") {
-  //   return;
-  // }
-
-  let voicesPromise = new Promise((resolve) => {
-    speechSynthesis.addEventListener("voiceschanged", (ev) => {
+  const voicesPromise = new Promise((resolve) => {
+    speechSynthesis.addEventListener("voiceschanged", () => {
       resolve(speechSynthesis.getVoices());
     });
   });
 
-  const voices = await voicesPromise;
+  const voices: SpeechSynthesisVoice[] =
+    (await voicesPromise) as SpeechSynthesisVoice[];
 
-  console.log({ voices });
-  // return [];
-  // @ts-expect-error
+  // only output french voices
   return voices.filter((lang) => lang.lang === "fr-FR");
-  // );
-
-  // return voices;
 }
 
-export function playSpeach(text = "1 2 3", voice) {
+export function playSpeach(text = "1 2 3", voice: SpeechSynthesisVoice) {
   console.log(text, voice);
   const voices = speechSynthesis.getVoices();
 
