@@ -27,12 +27,6 @@
     voice = voices.at(-1);
   });
 
-  // $effect(() => {
-  //   if (answer) {
-  //     playNumber();
-  //   }
-  // });
-
   function submitGuess(guessValue: string) {
     guess = guessValue;
 
@@ -102,7 +96,12 @@
 <button onclick={playNumber} class="play">Play</button>
 <button onclick={getAnotherNumber} class="full"> Another Number Please </button>
 
-<GuessForm {submitGuess} {answer} status={formState} {onClearForm} />
+<GuessForm
+  {submitGuess}
+  {answer}
+  status={formState}
+  handleClearForm={onClearForm}
+/>
 
 {#if showSuccess}
   <CorrectPopover

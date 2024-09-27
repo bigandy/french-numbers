@@ -7,10 +7,10 @@
     submitGuess: (value: string) => void;
     answer: string;
     status: FormState;
-    onClearForm: () => void;
+    handleClearForm: () => void;
   }
 
-  const { submitGuess, answer, status, onClearForm }: Props = $props();
+  const { submitGuess, answer, status, handleClearForm }: Props = $props();
 
   let guessValue = $state("");
 
@@ -38,7 +38,7 @@
 
     input.focus();
 
-    onClearForm();
+    handleClearForm();
   }
 </script>
 
