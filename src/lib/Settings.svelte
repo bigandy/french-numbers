@@ -1,8 +1,20 @@
 <script lang="ts">
   let selectVoice = $state(false);
-  const { handleSelectChange, voices } = $props();
+  interface Props {
+    voices: SpeechSynthesisVoice[]
+    handleSelectChange: (voice: SpeechSynthesisVoice) => void;
+    handleNumberSubmit: ({min, max}: {min: number, max: number}) => void;
+  }
+  const { handleSelectChange, voices, handleNumberSubmit }: Props = $props();
 
-  console.log({ handleSelectChange });
+  let min = $state(1);
+  let max = $state(100);
+
+
+  function onNumberSubmit() {
+    handleNumberSubmit({min, max});
+  }
+
 </script>
 
 <div>
@@ -19,6 +31,12 @@
       {/each}
     </select>
   {/if}
+</div>
+
+<div>
+  <label for="min">Min</label><input bind:value={min} type="number" id="min" />
+  <label for="max">Max</label><input bind:value={max} type="number" id="max" />
+  <button onclick={onNumberSubmit}>Submit</button>
 </div>
 
 <style>

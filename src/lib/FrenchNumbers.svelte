@@ -1,30 +1,32 @@
 <script lang="ts">
   // Svelte Stuff
-  import { onMount } from "svelte";
 
   // Component Imports
   import OptionsToggler from "./OptionsToggler.svelte";
   import CorrectPopover from "./CorrectPopover.svelte";
   import GuessForm from "./GuessForm.svelte";
-  // import SelectVoice from "./SelectVoice.svelte";
 
   // Other Imports
-  import { playSpeach, getAvailableFrenchVoices } from "./voices";
+  import { playSpeach } from "./voices";
   import type { FormState } from "./Types";
 
-  // State
+  interface Props {
+    voice: SpeechSynthesisVoice | undefined;
+    min: number;
+    max: number;
+  }
 
+  let { voice, min: minFromProps, max: maxFromProps }: Props = $props();
+
+  // State
   let answer = $state(getNewNumber());
-  let voices: SpeechSynthesisVoice[] = $state([]);
-  let voice: SpeechSynthesisVoice | undefined = $state(undefined);
   let guess = $state("");
   let selected: "voice" | "visual" = $state("voice");
   let formState: FormState = $state("");
   let showSuccess = $state(false);
 
-  onMount(async () => {
-    voices = await getAvailableFrenchVoices();
-    voice = voices.at(-1);
+  $effect(() => {
+    answer = getNewNumber(minFromProps, maxFromProps);
   });
 
   function submitGuess(guessValue: string) {
@@ -33,11 +35,8 @@
     if (guess === answer) {
       formState = "correct";
       clearForm();
-      console.log("celebrate?");
     } else {
       formState = "incorrect";
-      console.log("try again", guessValue);
-      // clearForm();
     }
   }
 
@@ -45,7 +44,6 @@
     if (formState === "correct") {
       if (!showSuccess) {
         getAnotherNumber(true);
-        // formState = "";
       }
     }
   });
@@ -54,7 +52,7 @@
     guess = "";
   }
 
-  function getNewNumber(min = 1, max = 100) {
+  function getNewNumber(min = minFromProps, max = maxFromProps) {
     return (Math.floor(Math.random() * (max - min + 1)) + min).toString();
   }
 
@@ -67,8 +65,6 @@
   }
 
   function playNumber() {
-    console.log("should play the number audibly", answer);
-
     if (voice) {
       playSpeach(answer, voice);
     }
@@ -77,12 +73,6 @@
   function onClearForm() {
     formState = "";
   }
-
-  // function handleVoiceChange(event: any) {
-  //   const { target } = event;
-
-  //   voice = voices.find((voice) => voice.name === target.value);
-  // }
 </script>
 
 <OptionsToggler bind:selected />
@@ -93,8 +83,7 @@
   </div>
 {/if}
 
-<button onclick={playNumber} class="play">Play</button>
-<button onclick={getAnotherNumber} class="full"> Another Number Please </button>
+<button onclick={playNumber} class="play full btn-primary">Play</button>
 
 <GuessForm
   {submitGuess}
@@ -103,6 +92,10 @@
   handleClearForm={onClearForm}
 />
 
+<button onclick={() => getAnotherNumber(true)} class="full">
+  Another Number Please
+</button>
+
 {#if showSuccess}
   <CorrectPopover
     {answer}
@@ -110,8 +103,6 @@
     show={guess === answer}
   />
 {/if}
-
-<!-- <SelectVoice {voices} handleSelectChange={handleVoiceChange} /> -->
 
 <style>
   .number {
@@ -130,5 +121,16 @@
 
   .full {
     width: 100%;
+  }
+
+  .btn-primary {
+    background: black;
+    color: white;
+    padding: 1.5rem;
+
+    &:hover,
+    &:focus {
+      background-color: grey;
+    }
   }
 </style>

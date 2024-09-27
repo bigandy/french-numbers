@@ -22,14 +22,13 @@
 
   $effect(() => {
     if (answer) {
-      console.log("we have a new answer", answer);
       clearForm();
     }
   });
 
   $effect(() => {
     if (status !== "" && guessValue === "") {
-      onClearForm();
+      handleClearForm();
     }
   });
 
