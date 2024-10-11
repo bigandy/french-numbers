@@ -14,3 +14,9 @@
 ## Recommended IDE Setup
 
 [VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
+
+## TODO
+
+- keep track of correct items
+- keep track of incorrect items
+- when have gone through all of items, go back through incorrect items.

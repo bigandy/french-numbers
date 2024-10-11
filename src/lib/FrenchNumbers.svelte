@@ -5,6 +5,7 @@
   // Other Imports
   import { playSpeach } from "./voices";
   import type { FormState } from "./Types";
+  // import { createNumbersObject } from "./helpers";
 
   interface Props {
     voice: SpeechSynthesisVoice | undefined;
@@ -15,21 +16,100 @@
 
   // State
   let min = $state(1);
-  let max = $state(100);
+  let max = $state(2);
+  let possibleAnswers = $state(createNumbersObject(min, max));
+
+  let correctAnswers = $derived.by(() => {
+    const out: any = [];
+    Object.entries(possibleAnswers).map(([key, value]) => {
+      {
+        // @ts-expect-error
+        if (value.status === "correct") {
+          out.push(key);
+        }
+      }
+    });
+
+    return out;
+  });
+
+  let inCorrectAnswers = $derived.by(() => {
+    const out: any = [];
+    Object.entries(possibleAnswers).map(([key, value]) => {
+      {
+        // @ts-expect-error
+        if (value.status === "incorrect") {
+          out.push(key);
+        }
+      }
+    });
+
+    return out;
+  });
+
+  let unanswered = $derived.by(() => {
+    const out: any = [];
+    Object.entries(possibleAnswers).map(([key, value]) => {
+      {
+        // @ts-expect-error
+        if (value.status === "undefined") {
+          out.push(key);
+        }
+      }
+    });
+
+    return out;
+  });
+
+  let totalQuestionsCount = $derived.by(() => {
+    return Object.entries(possibleAnswers).length;
+  });
+
   let answer = $state(getNewNumber());
   let guess = $state("");
   let formState: FormState = $state("");
-  let showSuccess = $state(false);
   let shouldFocusInput = $state(false);
-  
+
+  function createNumbersObject(min: number, max: number) {
+    // array of numbers from min to max
+    const maxValue = Math.max(min, max);
+
+    const minValue = Math.min(min, max);
+    const diff = maxValue - minValue;
+
+    const arrayOutput = Array(diff + 1)
+      .fill("")
+      .map((_, i) => i + min);
+    const outputObj = {};
+    for (const item of arrayOutput) {
+      // @ts-expect-error
+      outputObj[item] = {
+        status: "undefined",
+      };
+    }
+
+    return outputObj;
+  }
+
   function submitGuess(guessValue: string) {
     guess = guessValue;
-
+    const oldState = { ...possibleAnswers };
     if (guess === answer) {
       formState = "correct";
+
+      // @ts-expect-error
+      oldState[String(guess)].status = "correct";
+
+      possibleAnswers = oldState;
+
+      // update state
       clearForm();
     } else {
       formState = "incorrect";
+      // @ts-expect-error
+      oldState[String(guess)].status = "incorrect";
+
+      clearForm();
     }
   }
 
@@ -38,13 +118,22 @@
   }
 
   function getNewNumber() {
-    return (Math.floor(Math.random() * (max - min + 1)) + min).toString();
+    let number = "";
+    if (unanswered.length > 0) {
+      number = unanswered[(Math.random() * unanswered.length) | 0];
+    } else if (inCorrectAnswers.length > 0) {
+      console.log({ inCorrectAnswers, correctAnswers });
+      number = inCorrectAnswers[(Math.random() * unanswered.length) | 0];
+    } else {
+      console.log("SHOULD HAVE ALL CORRECT");
+    }
+    return number;
   }
 
   function getAnotherNumber(readOutNumber = false) {
     answer = getNewNumber();
 
-    if (readOutNumber) {
+    if (readOutNumber && answer !== "") {
       playNumber();
     }
   }
@@ -64,21 +153,29 @@
   }
 
   $effect(() => {
-    if (formState === "correct" && !showSuccess) {
+    if (formState === "correct") {
       getAnotherNumber(true);
     }
   });
+
+  $inspect({ correctAnswers, inCorrectAnswers });
 </script>
+
+<h1>{answer}</h1>
+
+<h2>Unanswered: {unanswered.length}</h2>
+<h2>correct Answers: {correctAnswers.length}</h2>
+<h2>incorrect Answers: {inCorrectAnswers.length}</h2>
+<h2>Total Questions: {totalQuestionsCount}</h2>
 
 <GuessForm
   {submitGuess}
   {answer}
   status={formState}
   handleClearForm={onClearForm}
-  shouldFocusInput={shouldFocusInput}
+  {shouldFocusInput}
   handlePlayNumberAgain={playNumber}
 />
-
 
 <button onclick={playNumber} class="play full btn-primary">Play</button>
 
