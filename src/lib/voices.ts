@@ -13,7 +13,6 @@ export async function getAvailableFrenchVoices() {
 }
 
 export function playSpeach(text = "1 2 3", voice: SpeechSynthesisVoice) {
-  // console.log(text, voice);
   const voices = speechSynthesis.getVoices();
 
   const utterThis = new SpeechSynthesisUtterance(text);
