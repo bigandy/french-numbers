@@ -52,23 +52,20 @@
   <button disabled={guessValue === ""}>Submit Guess</button>
 
   {#if status === "incorrect"}
-    <div>
-      <p>Incorrect guess.</p>
-      <button onclick={clearForm}>Try Again?</button>
-    </div>
+      <p class="error">Incorrect guess.</p>
+      <button onclick={clearForm} class="error">Try Again?</button>
   {/if}
 </form>
 
 <style>
   form {
     border: 1px solid;
-
     padding: 1em;
     display: grid;
     gap: 1rem;
     margin-block: 1rem;
-
     border-color: var(--color, inherit);
+    color: var(--color);
 
     input {
       border: 2px solid var(--color, black);
@@ -77,6 +74,7 @@
 
   .error {
     --color: red;
+    /* color: var(--color); */
   }
 
   .text-input {
@@ -88,5 +86,6 @@
   button {
     border: 2px solid;
     display: block;
+    color: var(--color);
   }
 </style>

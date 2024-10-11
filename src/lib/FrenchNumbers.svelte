@@ -12,23 +12,19 @@
 
   interface Props {
     voice: SpeechSynthesisVoice | undefined;
-    min: number;
-    max: number;
   }
 
-  let { voice, min: minFromProps, max: maxFromProps }: Props = $props();
+  let { voice }: Props = $props();
 
   // State
+  let min = $state(1);
+  let max = $state(100);
   let answer = $state(getNewNumber());
   let guess = $state("");
   let selected: "voice" | "visual" = $state("voice");
   let formState: FormState = $state("");
   let showSuccess = $state(false);
-
-  $effect(() => {
-    answer = getNewNumber(minFromProps, maxFromProps);
-  });
-
+  
   function submitGuess(guessValue: string) {
     guess = guessValue;
 
@@ -52,7 +48,7 @@
     guess = "";
   }
 
-  function getNewNumber(min = minFromProps, max = maxFromProps) {
+  function getNewNumber() {
     return (Math.floor(Math.random() * (max - min + 1)) + min).toString();
   }
 
