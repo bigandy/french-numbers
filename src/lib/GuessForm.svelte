@@ -43,7 +43,8 @@
 
 <form onsubmit={handleFormSubmit} class:error={status === "incorrect"}>
   <input
-    type="text"
+    min="0"
+    type="number"
     id="guess"
     bind:this={input}
     bind:value={guessValue}
