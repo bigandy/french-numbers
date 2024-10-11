@@ -1,9 +1,5 @@
 <script lang="ts">
-  // Svelte Stuff
-
   // Component Imports
-  import OptionsToggler from "./OptionsToggler.svelte";
-  import CorrectPopover from "./CorrectPopover.svelte";
   import GuessForm from "./GuessForm.svelte";
 
   // Other Imports
@@ -14,6 +10,7 @@
     voice: SpeechSynthesisVoice | undefined;
   }
 
+  // Props
   let { voice }: Props = $props();
 
   // State
@@ -21,9 +18,9 @@
   let max = $state(100);
   let answer = $state(getNewNumber());
   let guess = $state("");
-  let selected: "voice" | "visual" = $state("voice");
   let formState: FormState = $state("");
   let showSuccess = $state(false);
+  let shouldFocusInput = $state(false);
   
   function submitGuess(guessValue: string) {
     guess = guessValue;
@@ -35,14 +32,6 @@
       formState = "incorrect";
     }
   }
-
-  $effect(() => {
-    if (formState === "correct") {
-      if (!showSuccess) {
-        getAnotherNumber(true);
-      }
-    }
-  });
 
   function clearForm() {
     guess = "";
@@ -61,50 +50,43 @@
   }
 
   function playNumber() {
+    shouldFocusInput = false;
     if (voice) {
       playSpeach(answer, voice);
     }
+
+    // shouldFocusInput();
+    shouldFocusInput = true;
   }
 
   function onClearForm() {
     formState = "";
   }
+
+  $effect(() => {
+    if (formState === "correct" && !showSuccess) {
+      getAnotherNumber(true);
+    }
+  });
 </script>
-
-<OptionsToggler bind:selected />
-
-{#if selected === "visual"}
-  <div class="number">
-    {answer}
-  </div>
-{/if}
-
-<button onclick={playNumber} class="play full btn-primary">Play</button>
 
 <GuessForm
   {submitGuess}
   {answer}
   status={formState}
   handleClearForm={onClearForm}
+  shouldFocusInput={shouldFocusInput}
+  handlePlayNumberAgain={playNumber}
 />
+
+
+<button onclick={playNumber} class="play full btn-primary">Play</button>
 
 <button onclick={() => getAnotherNumber(true)} class="full">
   Another Number Please
 </button>
 
-{#if showSuccess}
-  <CorrectPopover
-    {answer}
-    handleFormSubmit={getAnotherNumber}
-    show={guess === answer}
-  />
-{/if}
-
 <style>
-  .number {
-    font-size: 10ch;
-    font-family: monospace;
-  }
   button {
     border: 2px solid;
     display: block;

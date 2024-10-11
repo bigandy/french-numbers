@@ -1,5 +1,6 @@
 <script lang="ts">
   let input: HTMLInputElement;
+  const inputId = "guess";
 
   import type { FormState } from "./Types";
 
@@ -8,16 +9,25 @@
     answer: string;
     status: FormState;
     handleClearForm: () => void;
+    handlePlayNumberAgain: () => void;
+    shouldFocusInput?: boolean;
   }
 
-  const { submitGuess, answer, status, handleClearForm }: Props = $props();
+  const {
+    submitGuess,
+    answer,
+    status,
+    handleClearForm,
+    shouldFocusInput,
+    handlePlayNumberAgain,
+  }: Props = $props();
 
   let guessValue = $state("");
 
   function handleFormSubmit(e: SubmitEvent) {
     e.preventDefault();
 
-    submitGuess(guessValue);
+    submitGuess(String(guessValue));
   }
 
   $effect(() => {
@@ -32,12 +42,27 @@
     }
   });
 
+  $effect(() => {
+    if (shouldFocusInput) {
+      focusInput();
+    }
+  });
+
   function clearForm() {
     guessValue = "";
 
-    input.focus();
+    focusInput();
+  }
+
+  function playNumberAgain() {
+    clearForm();
 
     handleClearForm();
+    handlePlayNumberAgain();
+  }
+
+  function focusInput() {
+    input.focus();
   }
 </script>
 
@@ -45,16 +70,19 @@
   <input
     min="0"
     type="number"
-    id="guess"
+    id={inputId}
     bind:this={input}
     bind:value={guessValue}
     class="text-input"
   />
-  <button disabled={guessValue === ""}>Submit Guess</button>
+
+  {#if status !== "incorrect"}
+    <button disabled={guessValue === ""}>Submit Guess</button>
+  {/if}
 
   {#if status === "incorrect"}
-      <p class="error">Incorrect guess.</p>
-      <button onclick={clearForm} class="error">Try Again?</button>
+    <button onclick={playNumberAgain} class="error">Play Number Again?</button>
+    <p class="error">Incorrect guess.</p>
   {/if}
 </form>
 
@@ -73,9 +101,13 @@
     }
   }
 
+  input::-webkit-outer-spin-button,
+  input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+  }
+
   .error {
     --color: red;
-    /* color: var(--color); */
   }
 
   .text-input {
