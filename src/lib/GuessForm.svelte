@@ -66,25 +66,32 @@
   }
 </script>
 
-<form onsubmit={handleFormSubmit} class:error={status === "incorrect"}>
-  <input
-    min="0"
-    type="number"
-    id={inputId}
-    bind:this={input}
-    bind:value={guessValue}
-    class="text-input"
-  />
+{#if status !== "complete"}
+  <form onsubmit={handleFormSubmit} class:error={status === "incorrect"}>
+    <input
+      min="0"
+      type="number"
+      id={inputId}
+      bind:this={input}
+      bind:value={guessValue}
+      class="text-input"
+    />
 
-  {#if status !== "incorrect"}
-    <button disabled={guessValue === ""}>Submit Guess</button>
-  {/if}
+    {#if status !== "incorrect"}
+      <button disabled={guessValue === ""}>Submit Guess</button>
+    {/if}
 
-  {#if status === "incorrect"}
-    <button onclick={playNumberAgain} class="error">Play Number Again?</button>
-    <p class="error">Incorrect guess.</p>
-  {/if}
-</form>
+    {#if status === "incorrect"}
+      <button onclick={playNumberAgain} class="error">Play Number Again?</button
+      >
+      <p class="error">Incorrect guess.</p>
+    {/if}
+  </form>
+{/if}
+
+{#if status === "complete"}
+  <p>Completed. Well done!</p>
+{/if}
 
 <style>
   form {

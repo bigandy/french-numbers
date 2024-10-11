@@ -15,8 +15,8 @@
   let { voice }: Props = $props();
 
   // State
-  let min = $state(1);
-  let max = $state(2);
+  let min = $state(13);
+  let max = $state(23);
   let possibleAnswers = $state(createNumbersObject(min, max));
 
   let correctAnswers = $derived.by(() => {
@@ -94,6 +94,7 @@
   function submitGuess(guessValue: string) {
     guess = guessValue;
     const oldState = { ...possibleAnswers };
+
     if (guess === answer) {
       formState = "correct";
 
@@ -101,6 +102,10 @@
       oldState[String(guess)].status = "correct";
 
       possibleAnswers = oldState;
+
+      if (unanswered.length === 0 && inCorrectAnswers === 0) {
+        formState = "complete";
+      }
 
       // update state
       clearForm();
@@ -126,6 +131,7 @@
       number = inCorrectAnswers[(Math.random() * unanswered.length) | 0];
     } else {
       console.log("SHOULD HAVE ALL CORRECT");
+      formState = "complete";
     }
     return number;
   }
@@ -152,36 +158,47 @@
     formState = "";
   }
 
+  function resetGame() {
+    possibleAnswers = createNumbersObject(min, max);
+    answer = getNewNumber();
+    formState = "";
+  }
+
   $effect(() => {
     if (formState === "correct") {
       getAnotherNumber(true);
     }
   });
-
-  $inspect({ correctAnswers, inCorrectAnswers });
 </script>
 
 <h1>{answer}</h1>
 
-<h2>Unanswered: {unanswered.length}</h2>
-<h2>correct Answers: {correctAnswers.length}</h2>
-<h2>incorrect Answers: {inCorrectAnswers.length}</h2>
-<h2>Total Questions: {totalQuestionsCount}</h2>
+{#if formState !== "complete"}
+  <h2>Unanswered: {unanswered.length}</h2>
+  <h2>correct Answers: {correctAnswers.length}</h2>
+  <h2>incorrect Answers: {inCorrectAnswers.length}</h2>
+  <h2>Total Questions: {totalQuestionsCount}</h2>
 
-<GuessForm
-  {submitGuess}
-  {answer}
-  status={formState}
-  handleClearForm={onClearForm}
-  {shouldFocusInput}
-  handlePlayNumberAgain={playNumber}
-/>
+  <GuessForm
+    {submitGuess}
+    {answer}
+    status={formState}
+    handleClearForm={onClearForm}
+    {shouldFocusInput}
+    handlePlayNumberAgain={playNumber}
+  />
 
-<button onclick={playNumber} class="play full btn-primary">Play</button>
+  <button onclick={playNumber} class="play full btn-primary">Play</button>
 
-<button onclick={() => getAnotherNumber(true)} class="full">
-  Another Number Please
-</button>
+  <button onclick={() => getAnotherNumber(true)} class="full">
+    Another Number Please
+  </button>
+{/if}
+
+{#if formState === "complete"}
+  <h1>Completed, well done!</h1>
+  <button onclick={resetGame}>Reset</button>
+{/if}
 
 <style>
   button {

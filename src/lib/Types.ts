@@ -1,1 +1,1 @@
-export type FormState = "" | "incorrect" | "correct";
+export type FormState = "" | "incorrect" | "correct" | "complete";
