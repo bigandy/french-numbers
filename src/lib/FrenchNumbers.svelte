@@ -15,8 +15,8 @@
   let { voice }: Props = $props();
 
   // State
-  let min = $state(13);
-  let max = $state(23);
+  let min = $state(101);
+  let max = $state(9999);
   let possibleAnswers = $state(createNumbersObject(min, max));
 
   let correctAnswers = $derived.by(() => {
@@ -147,7 +147,10 @@
   function playNumber() {
     shouldFocusInput = false;
     if (voice) {
-      playSpeach(answer, voice);
+      // Alter this to make the speach faster or slower. 1.0 is the default.
+      const speed = 0.6;
+
+      playSpeach(voice, answer, speed);
     }
 
     // shouldFocusInput();
@@ -171,7 +174,7 @@
   });
 </script>
 
-<h1>{answer}</h1>
+<!-- <h1>{answer}</h1> -->
 
 {#if formState !== "complete"}
   <h2>Unanswered: {unanswered.length}</h2>
